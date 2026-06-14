@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
 export default function Satellites() {
@@ -49,6 +50,7 @@ export default function Satellites() {
 
     const time = state.clock.getElapsedTime();
     let stateChanged = false;
+    let destroyedCount = 0;
 
     satData.forEach((sat) => {
       const inclination = (sat.INCLINATION * Math.PI) / 180;
@@ -63,26 +65,25 @@ export default function Satellites() {
       positionsRef.current[sat.id].set(x, y, z);
 
       dummy.position.set(x, y, z);
-      dummy.scale.setScalar(sat.destroyed ? 0.08 : 0.04);
+      dummy.scale.setScalar(sat.destroyed ? 0.06 : 0.03);
       dummy.updateMatrix();
       meshRef.current!.setMatrixAt(sat.id, dummy.matrix);
 
-      color.set(sat.destroyed ? '#ff3333' : '#00ffcc');
+      color.set(sat.destroyed ? '#ff4d4d' : '#33ffd0');
       meshRef.current!.setColorAt(sat.id, color);
+      
+      if (sat.destroyed) destroyedCount++;
     });
 
     for (let i = 0; i < count; i++) {
       if (!satData[i].destroyed) continue;
-
       const posA = positionsRef.current[i];
 
       for (let j = 0; j < count; j++) {
         if (i === j || satData[j].destroyed) continue;
-
         const posB = positionsRef.current[j];
-        const dist = posA.distanceTo(posB);
-
-        if (dist < 0.08) {
+        
+        if (posA.distanceToSquared(posB) < 0.0064) {
           satData[j].destroyed = true;
           stateChanged = true;
         }
@@ -92,6 +93,8 @@ export default function Satellites() {
     if (stateChanged) {
       setSatData([...satData]);
     }
+
+    window.dispatchEvent(new CustomEvent('sat-update', { detail: destroyedCount }));
 
     meshRef.current.instanceMatrix.needsUpdate = true;
     if (meshRef.current.instanceColor) {
@@ -110,12 +113,8 @@ export default function Satellites() {
   };
 
   return (
-    <instancedMesh 
-      ref={meshRef} 
-      args={[undefined, undefined, count]} 
-      onClick={handleMeshClick}
-    >
-      <boxGeometry args={[2, 2, 2]} />
+    <instancedMesh ref={meshRef} args={[undefined, undefined, count]} onClick={handleMeshClick}>
+      <sphereGeometry args={[0.5, 8, 8]} />
       <meshBasicMaterial />
     </instancedMesh>
   );

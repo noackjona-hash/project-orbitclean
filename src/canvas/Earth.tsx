@@ -12,14 +12,20 @@ export default function Earth() {
 
   useFrame((_, delta) => {
     if (earthRef.current) {
-      earthRef.current.rotation.y += delta * 0.05;
+      earthRef.current.rotation.y += delta * 0.03;
     }
   });
 
   return (
-    <mesh ref={earthRef}>
-      <sphereGeometry args={[2, 128, 128]} />
-      <meshBasicMaterial map={colorMap} />
-    </mesh>
+    <group>
+      <mesh ref={earthRef}>
+        <sphereGeometry args={[2, 64, 64]} />
+        <meshBasicMaterial map={colorMap} />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[2.03, 32, 32]} />
+        <meshBasicMaterial color="#4da6ff" transparent opacity={0.15} side={THREE.BackSide} />
+      </mesh>
+    </group>
   );
 }
