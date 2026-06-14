@@ -58,7 +58,7 @@ export default function Satellites() {
       const z = r * Math.sin(angle) * Math.cos(inclination);
 
       dummy.position.set(x, y, z);
-      dummy.scale.setScalar(sat.destroyed ? 0.04 : 0.025);
+      dummy.scale.setScalar(sat.destroyed ? 0.08 : 0.04);
       dummy.updateMatrix();
       meshRef.current!.setMatrixAt(sat.id, dummy.matrix);
 
@@ -78,12 +78,7 @@ export default function Satellites() {
     if (instanceId === undefined) return;
 
     setSatData((prev) =>
-      prev.map((sat) => {
-        if (sat.id === instanceId) {
-          return { ...sat, destroyed: true };
-        }
-        return sat;
-      })
+      prev.map((sat) => (sat.id === instanceId ? { ...sat, destroyed: true } : sat))
     );
   };
 
@@ -92,8 +87,9 @@ export default function Satellites() {
       ref={meshRef} 
       args={[undefined, undefined, count]} 
       onClick={handleMeshClick}
+      raycast={THREE.Raycaster.prototype.raycast}
     >
-      <boxGeometry args={[1, 1, 1]} />
+      <boxGeometry args={[2, 2, 2]} />
       <meshBasicMaterial />
     </instancedMesh>
   );
