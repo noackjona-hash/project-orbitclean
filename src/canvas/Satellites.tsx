@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { instancedMesh } from 'three/src/nodes/accessors/InstancedMeshNode.js';
 
 export default function Satellites() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -35,10 +36,10 @@ export default function Satellites() {
     }
   });
 
-  return (
-    <instancedMesh ref={meshRef} args={[null, null, count]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshBasicMaterial color="#00ffcc" />
-    </instancedMesh>
-  );
+    return (
+        <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial color="#00ffcc" />
+        </instancedMesh>
+    );
 }
