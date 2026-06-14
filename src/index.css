@@ -8,6 +8,6 @@ html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #050505; /* Tiefes Weltall-Schwarz */
+  background-color: #050505;
   font-family: sans-serif;
 }
