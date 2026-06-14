@@ -7,6 +7,9 @@ export default function Earth() {
   const earthRef = useRef<THREE.Mesh>(null);
   const colorMap = useTexture('/textures/earth_map.jpg');
 
+  colorMap.wrapS = THREE.RepeatWrapping;
+  colorMap.wrapT = THREE.ClampToEdgeWrapping;
+
   useFrame((_, delta) => {
     if (earthRef.current) {
       earthRef.current.rotation.y += delta * 0.05;
@@ -15,12 +18,8 @@ export default function Earth() {
 
   return (
     <mesh ref={earthRef}>
-      <sphereGeometry args={[2, 64, 64]} />
-      <meshStandardMaterial 
-        map={colorMap}
-        roughness={0.4}
-        metalness={0.1}
-      />
+      <sphereGeometry args={[2, 128, 128]} />
+      <meshBasicMaterial map={colorMap} />
     </mesh>
   );
 }
