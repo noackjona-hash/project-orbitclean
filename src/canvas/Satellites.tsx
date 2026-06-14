@@ -12,14 +12,23 @@ export default function Satellites() {
     fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=json'))
       .then((response) => {
         if (response.ok) return response.json();
-        throw new Error('Netzwerk-Fehler beim Proxy');
+        throw new Error('Proxy offline');
       })
       .then((wrapper) => {
         const data = JSON.parse(wrapper.contents);
-        if (!Array.isArray(data)) return;
+        if (!Array.isArray(data)) throw new Error('Ungültiges Datenformat');
         setSatData(data.slice(0, count));
       })
-      .catch((err) => console.error("Fehler beim Laden der NASA/CelesTrak Daten:", err));
+      .catch((err) => {
+        console.warn("Nutze Offline-Fallback-Daten wegen Fehler:", err.message);
+        
+        const fallbackData = Array.from({ length: count }).map((_, i) => ({
+          INCLINATION: 53 + Math.random() * 2,
+          ECCENTRICITY: 0.0001 + Math.random() * 0.001,
+          MEAN_MOTION: 15.0 + Math.random() * 0.5
+        }));
+        setSatData(fallbackData);
+      });
   }, []);
 
   useFrame((state) => {
