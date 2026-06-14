@@ -17,7 +17,7 @@ export default function Earth() {
   });
 
   return (
-    <group pointerEvents="none">
+    <group>
       <mesh ref={earthRef}>
         <sphereGeometry args={[2, 64, 64]} />
         <meshBasicMaterial map={colorMap} />
