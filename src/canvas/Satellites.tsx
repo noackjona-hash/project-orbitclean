@@ -8,6 +8,7 @@ export default function Satellites() {
   const count = 1000;
   const dummy = new THREE.Object3D();
   const apiKey = '0IC3jrF6f7bgnalFEJ54RyR71wzxmZ11ZfcwH6ml';
+  const color = new THREE.Color();
 
   useEffect(() => {
     fetch(`https://api.nasa.gov/techport/api/projects?api_key=${apiKey}`)
@@ -33,7 +34,8 @@ export default function Satellites() {
             MEAN_MOTION: 14.0 + Math.random() * 1.5,
             phase: Math.random() * Math.PI * 2,
             baseRadius: baseR,
-            id: index
+            id: index,
+            destroyed: false
           };
         });
         setSatData(generatedSats);
@@ -56,18 +58,43 @@ export default function Satellites() {
       const z = r * Math.sin(angle) * Math.cos(inclination);
 
       dummy.position.set(x, y, z);
-      dummy.scale.setScalar(0.025);
+      dummy.scale.setScalar(sat.destroyed ? 0.04 : 0.025);
       dummy.updateMatrix();
       meshRef.current!.setMatrixAt(sat.id, dummy.matrix);
+
+      color.set(sat.destroyed ? '#ff3333' : '#00ffcc');
+      meshRef.current!.setColorAt(sat.id, color);
     });
 
     meshRef.current.instanceMatrix.needsUpdate = true;
+    if (meshRef.current.instanceColor) {
+      meshRef.current.instanceColor.needsUpdate = true;
+    }
   });
 
+  const handleMeshClick = (e: any) => {
+    e.stopPropagation();
+    const instanceId = e.instanceId;
+    if (instanceId === undefined) return;
+
+    setSatData((prev) =>
+      prev.map((sat) => {
+        if (sat.id === instanceId) {
+          return { ...sat, destroyed: true };
+        }
+        return sat;
+      })
+    );
+  };
+
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+    <instancedMesh 
+      ref={meshRef} 
+      args={[undefined, undefined, count]} 
+      onClick={handleMeshClick}
+    >
       <boxGeometry args={[1, 1, 1]} />
-      <meshBasicMaterial color="#00ffcc" />
+      <meshBasicMaterial />
     </instancedMesh>
   );
 }
