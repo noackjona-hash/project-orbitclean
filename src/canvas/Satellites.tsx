@@ -82,15 +82,14 @@ export default function Satellites() {
     );
   };
 
-  return (
-    <instancedMesh 
-      ref={meshRef} 
-      args={[undefined, undefined, count]} 
-      onClick={handleMeshClick}
-      raycast={THREE.Raycaster.prototype.raycast}
-    >
-      <boxGeometry args={[2, 2, 2]} />
-      <meshBasicMaterial />
-    </instancedMesh>
+    return (
+        <instancedMesh 
+            ref={meshRef} 
+            args={[undefined, undefined, count]} 
+            onClick={handleMeshClick}
+        >
+            <boxGeometry args={[2, 2, 2]} />
+            <meshBasicMaterial />
+        </instancedMesh>
   );
 }
