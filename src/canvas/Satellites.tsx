@@ -8,22 +8,22 @@ export default function Satellites() {
   const dummy = new THREE.Object3D();
 
   useEffect(() => {
-    // Wir holen uns die echten orbitalen Live-Daten von CelesTrak (Starlink-Satelliten)
-    fetch('https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=json')
-      .then((response) => response.json())
-      .then((data) => {
-        if (!meshRef.current) return;
+    fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=json'))
+      .then((response) => {
+        if (response.ok) return response.json();
+        throw new Error('Netzwerk-Fehler beim Proxy');
+      })
+      .then((wrapper) => {
+        const data = JSON.parse(wrapper.contents);
+        if (!meshRef.current || !Array.isArray(data)) return;
 
-        // Wir nehmen die ersten 100 aktiven Satelliten aus der Liste
         const satellites = data.slice(0, count);
 
         satellites.forEach((sat: any, i: number) => {
-          // Wir nutzen die echten Bahnneigungen (Inclination) und Exzentrizitäten
           const inclination = (sat.INCLINATION * Math.PI) / 180;
-          const r = 2.5 + (sat.ECCENTRICITY * 0.5); // Flughöhe leicht über der Erde (Radius 2)
-          const angle = Math.random() * Math.PI * 2;
+          const r = 2.5 + (sat.ECCENTRICITY * 0.5);
+          const angle = (i / count) * Math.PI * 2;
 
-          // Mathematische Umrechnung der orbitalen Neigung in 3D-Koordinaten
           const x = r * Math.cos(angle);
           const y = r * Math.sin(angle) * Math.sin(inclination);
           const z = r * Math.sin(angle) * Math.cos(inclination);
