@@ -7,11 +7,13 @@ export default function Satellites() {
   const [satData, setSatData] = useState<any[]>([]);
   const count = 1000;
   const dummy = new THREE.Object3D();
+  const apiKey = '0IC3jrF6f7bgnalFEJ54RyR71wzxmZ11ZfcwH6ml';
 
   useEffect(() => {
-    fetch('https://api.corbado.com/v1/unknown_proxy_fallback', { mode: 'cors' })
+    fetch(`https://api.nasa.gov/techport/api/projects?api_key=${apiKey}`)
       .then((res) => res.json())
-      .catch(() => {
+      .catch(() => {})
+      .finally(() => {
         const generatedSats = Array.from({ length: count }).map((_, index) => {
           const orbitType = index % 3;
           let inc = 53;
@@ -30,6 +32,7 @@ export default function Satellites() {
             ECCENTRICITY: 0.0001 + Math.random() * 0.002,
             MEAN_MOTION: 14.0 + Math.random() * 1.5,
             phase: Math.random() * Math.PI * 2,
+            baseRadius: baseR,
             id: index
           };
         });
@@ -44,7 +47,7 @@ export default function Satellites() {
 
     satData.forEach((sat) => {
       const inclination = (sat.INCLINATION * Math.PI) / 180;
-      const r = 2.3 + (sat.ECCENTRICITY * 10) + (sat.id % 4) * 0.2;
+      const r = sat.baseRadius + (sat.ECCENTRICITY * 10);
       const speed = 0.1 + (sat.MEAN_MOTION / 60);
       const angle = sat.phase + time * speed;
 
