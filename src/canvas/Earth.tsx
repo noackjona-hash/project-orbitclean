@@ -6,11 +6,11 @@ export default function Earth() {
   const earthRef = useRef<THREE.Mesh>(null);
 
   // useFrame läuft in einer Schleife (60 FPS) und lässt die Erde rotieren
-  useFrame((state, delta) => {
-    if (earthRef.current) {
-      earthRef.current.rotation.y += delta * 0.05; // Geschwindigkeit der Erdrotation
-    }
-  });
+    useFrame((_, delta) => {
+        if (earthRef.current) {
+            earthRef.current.rotation.y += delta * 0.05;
+        }
+    });
 
   return (
     <mesh ref={earthRef}>
