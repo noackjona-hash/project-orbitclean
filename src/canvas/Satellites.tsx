@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { instancedMesh } from 'three/src/nodes/accessors/InstancedMeshNode.js';
 
 export default function Satellites() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
