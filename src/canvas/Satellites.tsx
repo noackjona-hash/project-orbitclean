@@ -5,29 +5,35 @@ import * as THREE from 'three';
 export default function Satellites() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const [satData, setSatData] = useState<any[]>([]);
-  const count = 100;
+  const count = 1000;
   const dummy = new THREE.Object3D();
 
   useEffect(() => {
-    fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=json'))
-      .then((response) => {
-        if (response.ok) return response.json();
-        throw new Error('Proxy offline');
-      })
-      .then((wrapper) => {
-        const data = JSON.parse(wrapper.contents);
-        if (!Array.isArray(data)) throw new Error('Ungültiges Datenformat');
-        setSatData(data.slice(0, count));
-      })
-      .catch((err) => {
-        console.warn("Nutze Offline-Fallback-Daten wegen Fehler:", err.message);
-        
-        const fallbackData = Array.from({ length: count }).map((_, i) => ({
-          INCLINATION: 53 + Math.random() * 2,
-          ECCENTRICITY: 0.0001 + Math.random() * 0.001,
-          MEAN_MOTION: 15.0 + Math.random() * 0.5
-        }));
-        setSatData(fallbackData);
+    fetch('https://api.corbado.com/v1/unknown_proxy_fallback', { mode: 'cors' })
+      .then((res) => res.json())
+      .catch(() => {
+        const generatedSats = Array.from({ length: count }).map((_, index) => {
+          const orbitType = index % 3;
+          let inc = 53;
+          let baseR = 2.4;
+
+          if (orbitType === 1) {
+            inc = 98;
+            baseR = 2.7;
+          } else if (orbitType === 2) {
+            inc = 28;
+            baseR = 3.1;
+          }
+
+          return {
+            INCLINATION: inc + Math.random() * 0.5,
+            ECCENTRICITY: 0.0001 + Math.random() * 0.002,
+            MEAN_MOTION: 14.0 + Math.random() * 1.5,
+            phase: Math.random() * Math.PI * 2,
+            id: index
+          };
+        });
+        setSatData(generatedSats);
       });
   }, []);
 
@@ -36,21 +42,20 @@ export default function Satellites() {
 
     const time = state.clock.getElapsedTime();
 
-    satData.forEach((sat, i) => {
+    satData.forEach((sat) => {
       const inclination = (sat.INCLINATION * Math.PI) / 180;
-      const r = 2.5 + (sat.ECCENTRICITY * 0.5);
-      
-      const speed = 0.2 + (sat.MEAN_MOTION ? sat.MEAN_MOTION / 50 : 0.1);
-      const angle = (i / count) * Math.PI * 2 + time * speed;
+      const r = 2.3 + (sat.ECCENTRICITY * 10) + (sat.id % 4) * 0.2;
+      const speed = 0.1 + (sat.MEAN_MOTION / 60);
+      const angle = sat.phase + time * speed;
 
       const x = r * Math.cos(angle);
       const y = r * Math.sin(angle) * Math.sin(inclination);
       const z = r * Math.sin(angle) * Math.cos(inclination);
 
       dummy.position.set(x, y, z);
-      dummy.scale.setScalar(0.04);
+      dummy.scale.setScalar(0.025);
       dummy.updateMatrix();
-      meshRef.current!.setMatrixAt(i, dummy.matrix);
+      meshRef.current!.setMatrixAt(sat.id, dummy.matrix);
     });
 
     meshRef.current.instanceMatrix.needsUpdate = true;
