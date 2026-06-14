@@ -64,7 +64,7 @@ export default function Satellites() {
       positionsRef.current[sat.id].set(x, y, z);
 
       dummy.position.set(x, y, z);
-      dummy.scale.setScalar(sat.destroyed ? 0.15 : 0.05);
+      dummy.scale.setScalar(sat.destroyed ? 0.2 : 0.08);
       dummy.updateMatrix();
       meshRef.current!.setMatrixAt(sat.id, dummy.matrix);
 
@@ -82,7 +82,7 @@ export default function Satellites() {
         if (i === j || satData[j].destroyed) continue;
         const posB = positionsRef.current[j];
         
-        if (posA.distanceToSquared(posB) < 0.015) {
+        if (posA.distanceToSquared(posB) < 0.02) {
           satData[j].destroyed = true;
           stateChanged = true;
         }
@@ -117,7 +117,7 @@ export default function Satellites() {
       args={[null as any, null as any, count]} 
       onClick={handleMeshClick}
     >
-      <boxGeometry args={[1, 1, 1]} />
+      <boxGeometry args={[1.5, 1.5, 1.5]} />
       <meshBasicMaterial />
     </instancedMesh>
   );
