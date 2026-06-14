@@ -10,6 +10,8 @@ export default function Satellites() {
   const apiKey = '0IC3jrF6f7bgnalFEJ54RyR71wzxmZ11ZfcwH6ml';
   const color = new THREE.Color();
 
+  const positionsRef = useRef<THREE.Vector3[]>(Array.from({ length: count }, () => new THREE.Vector3()));
+
   useEffect(() => {
     fetch(`https://api.nasa.gov/techport/api/projects?api_key=${apiKey}`)
       .then((res) => res.json())
@@ -46,6 +48,7 @@ export default function Satellites() {
     if (!meshRef.current || satData.length === 0) return;
 
     const time = state.clock.getElapsedTime();
+    let stateChanged = false;
 
     satData.forEach((sat) => {
       const inclination = (sat.INCLINATION * Math.PI) / 180;
@@ -57,6 +60,8 @@ export default function Satellites() {
       const y = r * Math.sin(angle) * Math.sin(inclination);
       const z = r * Math.sin(angle) * Math.cos(inclination);
 
+      positionsRef.current[sat.id].set(x, y, z);
+
       dummy.position.set(x, y, z);
       dummy.scale.setScalar(sat.destroyed ? 0.08 : 0.04);
       dummy.updateMatrix();
@@ -65,6 +70,28 @@ export default function Satellites() {
       color.set(sat.destroyed ? '#ff3333' : '#00ffcc');
       meshRef.current!.setColorAt(sat.id, color);
     });
+
+    for (let i = 0; i < count; i++) {
+      if (!satData[i].destroyed) continue;
+
+      const posA = positionsRef.current[i];
+
+      for (let j = 0; j < count; j++) {
+        if (i === j || satData[j].destroyed) continue;
+
+        const posB = positionsRef.current[j];
+        const dist = posA.distanceTo(posB);
+
+        if (dist < 0.08) {
+          satData[j].destroyed = true;
+          stateChanged = true;
+        }
+      }
+    }
+
+    if (stateChanged) {
+      setSatData([...satData]);
+    }
 
     meshRef.current.instanceMatrix.needsUpdate = true;
     if (meshRef.current.instanceColor) {
@@ -82,14 +109,14 @@ export default function Satellites() {
     );
   };
 
-    return (
-        <instancedMesh 
-            ref={meshRef} 
-            args={[undefined, undefined, count]} 
-            onClick={handleMeshClick}
-        >
-            <boxGeometry args={[2, 2, 2]} />
-            <meshBasicMaterial />
-        </instancedMesh>
+  return (
+    <instancedMesh 
+      ref={meshRef} 
+      args={[undefined, undefined, count]} 
+      onClick={handleMeshClick}
+    >
+      <boxGeometry args={[2, 2, 2]} />
+      <meshBasicMaterial />
+    </instancedMesh>
   );
 }
